@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 import re
 import aiohttp
 import json
+import pickle
 
 
 with open(r"C:\Users\callu\OneDrive\Desktop\ticketsforgood.txt", 'r') as f:
@@ -16,24 +17,24 @@ class EventParser:
     def __init__(self, website):
         self.website = website
 
-        with open("./src/app/site_info.json", "r") as file:
+        with open("./src/parse_events/site_info.json", "r") as file:
             info_all_sites = json.load(file)
         self.site_info = info_all_sites[self.website]
 
     async def fetch_html(self):
         html_obj = {
             'html': None,
-            'logged_in': False
+            'logged_in': None,
         }
-
         async with aiohttp.ClientSession() as session: # create a session so login is cached and cookies are stored
             await self.login(session)
             page_url =  self.site_info['URL_BASE'] + self.site_info['FIRST_PAGE_REL_PATH']
             async with session.get(page_url) as response:
                 content = await response.text()
                 soup = BeautifulSoup(content, 'html.parser')
-            
-            login_success = self.is_logged_in(soup)
+            if self.website == 'ticketsforgood':
+                login_success = self.is_logged_in(soup)
+                html_obj.update({'logged_in': login_success})
             
             # Find number of pages to search
             if not re.search('concertsforcarers', self.site_info['URL_BASE']):
@@ -52,9 +53,9 @@ class EventParser:
                 url = self.site_info['URL_BASE'] + page_ext
                 task = asyncio.create_task(self.parse_event_cards(session, sem, url)) ### semaphore must be within async func or wont work
                 tasks.append(task)
-            completed_tasks, _ = await asyncio.wait(tasks)  # returns tasks completed and awaiting. ignore latter
-            html_obj.update({'html': completed_tasks, 'logged_on': login_success})
-            
+            completed_tasks = await asyncio.gather(*tasks)
+            card_html = [card for sublist in completed_tasks for card in sublist]
+            html_obj.update({'html': card_html})
             return html_obj
 
         
@@ -142,9 +143,7 @@ class EventParser:
 
     async def main(self):
         html_dict = await self.fetch_html()
-        finished_tasks = html_dict['html']
-        results = [await result for result in finished_tasks]
-        cards_html = [card for sublist in results for card in sublist]
+        cards_html = html_dict['html']
         event_df = self.html_to_dataframe(cards_html)
         if self.website == 'ticketsforgood':
             is_logged_in = html_dict['logged_on']
@@ -154,8 +153,16 @@ class EventParser:
 
 if __name__ == "__main__":
 
+    def run_event_loop(method): 
+        loop = asyncio.get_event_loop()
+        return loop.run_until_complete(method())
+    
+    file_path = "./src/parse_events/mock_data/bluelighttickets/"
 
-    loop = asyncio.get_event_loop()
-    card_df = loop.run_until_complete(EventParser('concertsforcarers').main())
-
-    print(card_df)
+    # Bluelight tickets mock data
+    
+    parser = EventParser('bluelighttickets')
+    event_html_dict = run_event_loop(parser.fetch_html)
+    event_html_dict.update({'html': event_html_dict['html'][:2]})
+  
+  
