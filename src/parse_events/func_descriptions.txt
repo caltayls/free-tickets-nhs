@@ -1,0 +1,8 @@
+fetch_html returns dic{html, logged_on}
+
+
+html_to_dataframe(cards_html) returns df; 
+parse_card_info(event_card) returns event_dic; 
+login(session, email, pw) returns null; 
+is_logged_in(soup) returns bool; 
+main returns event_df

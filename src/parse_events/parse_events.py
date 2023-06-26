@@ -93,7 +93,10 @@ class EventParser:
             details = event_card.select('span')[:5]
             details_text = [element.text for element in details]
             event_name1, event_name2, location, _, date  = details_text
-            event_name = f"{event_name1} - {event_name2}" # Event name is arranged awkwardly so needs combined
+            if event_name1 != event_name2:
+                event_name = f"{event_name1} - {event_name2}" # Event name is arranged awkwardly so needs combined
+            else:
+                event_name = event_name1
             url_ext = event_card.select_one("a.button")['href']
             event_dic = {'event_name':event_name, 'location': location, 'date': date, 'url': url_ext}
             return event_dic
@@ -149,20 +152,36 @@ class EventParser:
             is_logged_in = html_dict['logged_in']
             print(f"Logged in? {is_logged_in}")
         return event_df
-
-
-if __name__ == "__main__":
-
-    def run_event_loop(method): 
-        loop = asyncio.get_event_loop()
-        return loop.run_until_complete(method())
     
-    file_path = "./src/parse_events/mock_data/bluelighttickets/"
+    @staticmethod
+    async def all_events(self):
+        pass
 
-    # Bluelight tickets mock data
+
+
+# if __name__ == "__main__":
     
-    parser = EventParser('bluelighttickets')
-    event_html_dict = run_event_loop(parser.fetch_html)
-    event_html_dict.update({'html': event_html_dict['html'][:2]})
+#     def run_event_loop(method): 
+#         loop = asyncio.get_event_loop()
+#         return loop.run_until_complete(method())
+    
+    
+    
+#     loop = asyncio.new_event_loop()
+    
+#     async def sendit():
+#         parser1 = EventParser('bluelighttickets')
+#         parser2 = EventParser('ticketsforgood')
+#         tasks = []
+#         for p in [parser1, parser2]:
+#             task = asyncio.create_task(p.main())
+#             tasks.append(task)
+#         completed_tasks = await asyncio.gather(*tasks)
+#         return completed_tasks
+#     # results = run_event_loop(completed_tasks)
+#     # print(results)
+#     results = loop.run_until_complete(sendit())
+#     print(results)
+    
   
   
