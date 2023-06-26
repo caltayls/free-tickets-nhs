@@ -146,7 +146,7 @@ class EventParser:
         cards_html = html_dict['html']
         event_df = self.html_to_dataframe(cards_html)
         if self.website == 'ticketsforgood':
-            is_logged_in = html_dict['logged_on']
+            is_logged_in = html_dict['logged_in']
             print(f"Logged in? {is_logged_in}")
         return event_df
 
