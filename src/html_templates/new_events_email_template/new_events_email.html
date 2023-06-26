@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <title>New Events Email</title>
+    <link href="./css/new_events_email.css" rel="stylesheet"/>
 </head>
 <body>
 <div id="header-container"></div>
@@ -13,6 +14,10 @@
     const p = document.createElement('p');
  
     const eventTable = document.createElement('table');
+    const tableHead = document.createElement('thead');
+    const tableBody = document.createElement('tbody');
+    eventTable.appendChild(tableHead);
+    eventTable.appendChild(tableBody);
     
 
 
@@ -21,6 +26,7 @@
         .then(json => json.data)
         .then(dataArray => {
             const tableHeaderRow = document.createElement('tr');
+            tableHead.appendChild(tableHeaderRow);
             const columnNames = Object.keys(dataArray[0]);
             columnNames.forEach(name => {
                 const tableData = document.createElement('th');

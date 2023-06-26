@@ -1,7 +1,7 @@
 import pandas as pd
 import asyncio
 from src.parse_events.parse_events import EventParser 
-from src.aws_utils.utils import AWS_tools
+# from src.aws_utils.utils import AWS_tools
 
 def run_new_event_loop(method): 
         loop = asyncio.new_event_loop()
@@ -25,7 +25,9 @@ results = run_new_event_loop(sendit)
 combined = pd.concat(results)
 combined = combined.reset_index()
 print(combined)
-combined.to_json("./src/html_templates/new_events.json", orient='table', index=False)
+combined.to_json("./src/html_templates/new_events_email_template/new_events.json", orient='table', index=False)
 # aws_tools = AWS_tools()
 
-    
+df = run_new_event_loop(EventParser('concertsforcarers').main)
+print(df)
+df.to_json("./src/html_templates/new_events_email_template/new_events.json", orient='table', index=False)
