@@ -154,34 +154,31 @@ class EventParser:
         return event_df
     
     @staticmethod
-    async def all_events(self):
-        pass
+    async def new_events():
+        parser1 = EventParser('bluelighttickets')
+        parser2 = EventParser('ticketsforgood')
+        parser3 = EventParser('concertsforcarers')
+        tasks = []
+        for p in [parser1, parser2, parser3]:
+            task = asyncio.create_task(p.main())
+            tasks.append(task)
+        df_array = await asyncio.gather(*tasks)
+        event_df = pd.concat(df_array)
+        event_df = event_df.reset_index()
+        return event_df
 
 
 
-# if __name__ == "__main__":
+if __name__ == "__main__":
     
-#     def run_event_loop(method): 
-#         loop = asyncio.get_event_loop()
-#         return loop.run_until_complete(method())
+    def run_event_loop(method): 
+        loop = asyncio.get_event_loop()
+        return loop.run_until_complete(method())
     
-    
-    
-#     loop = asyncio.new_event_loop()
-    
-#     async def sendit():
-#         parser1 = EventParser('bluelighttickets')
-#         parser2 = EventParser('ticketsforgood')
-#         tasks = []
-#         for p in [parser1, parser2]:
-#             task = asyncio.create_task(p.main())
-#             tasks.append(task)
-#         completed_tasks = await asyncio.gather(*tasks)
-#         return completed_tasks
-#     # results = run_event_loop(completed_tasks)
-#     # print(results)
-#     results = loop.run_until_complete(sendit())
-#     print(results)
-    
+    df = run_event_loop(EventParser.new_events)
+    print(df)
   
-  
+
+    df['website_name'] = df.website.str.replace(r'https://(www\.)?', '', regex=True)
+    df.website_name = df.website_name.str.replace(r"\.\w+(\.w+)?", '', regex=True)
+    df.website_name.unique()

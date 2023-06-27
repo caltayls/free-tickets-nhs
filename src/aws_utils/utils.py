@@ -2,13 +2,17 @@ import pandas as pd
 import boto3
 from io import BytesIO, StringIO
 
+with open(r"C:\Users\callu\OneDrive\Desktop\aws-key.txt", 'r') as f:
+    key = f.readline().strip('\n')
+    sec = f.readline().strip('\n')
+
 class AWS_tools:
 
-    def __init__(self):
+    def __init__(self, AWS_key, AWS_secret,):
         self._key_secret = {
             'aws_access_key_id': AWS_key,
             'aws_secret_access_key': AWS_secret, 
-            'region_name': AWS_region,
+            'region_name': 'eu-west-2',
         }       
         self.s3 = boto3.client('s3', **self._key_secret) # to access files
         self.ses = boto3.client('ses', **self._key_secret) # to email data
@@ -27,8 +31,8 @@ class AWS_tools:
         df = pd.read_csv(BytesIO(content))
         return df
     
-    def email_new_events(self, address_list, source_email_address, events_df):
-        html = events_df.to_html(index=False, )
+    def send_email(self, address_list, source_email_address, html):
+        # html = events_df.to_html(index=False, )
 
         CHARSET = "UTF-8"
         message = {
@@ -47,4 +51,14 @@ class AWS_tools:
         bucket_name = 'ticketsforgood'
         file_name = 'last-search.csv'
         self.df_to_bucket(self._all_events_df, file_name, bucket_name)
+
+
+if __name__ == '__main__':
+    with open(r'C:\Users\callu\OneDrive\Documents\coding\webscrape\ticket_checker_app\ticket_checker_app\src\html_templates\new_events_email_template\new_events_email.html', 'r') as f:
+        html = f.read()
+
+
+    AWS_tools(key, sec).send_email(address_list=['callumtaylor955@gmail.com'], source_email_address='callumtaylor955@gmail.com', html=html)
+
+
 

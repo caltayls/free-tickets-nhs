@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>New Events Email</title>
+    <!-- <link href=".\css\new_events_email.css" rel="stylesheet"/> -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/new_events_email.css') }}">
+</head>
+<body>
+
+    <div id="header-container">
+        <h1>{{ count }} New Events</h1>
+    </div>
+    <div id="table-container">
+        <table>
+            <thead>
+                <tr>
+                    {% for column_name in columns %}
+                        <th>{{ column_name }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for event in events %}
+                <tr>
+                    <td><a href={{ event.url }}>{{ event.event_name }}</a></td>
+                    <td>{{ event.location }}</td>
+                    <td>{{ event.date }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

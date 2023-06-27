@@ -1,7 +1,10 @@
 import pandas as pd
 import asyncio
 from src.parse_events.parse_events import EventParser 
+from jinja2 import Environment, FileSystemLoader
 # from src.aws_utils.utils import AWS_tools
+import os
+print(os.getcwd())
 
 def run_new_event_loop(method): 
         loop = asyncio.new_event_loop()
@@ -19,15 +22,27 @@ async def sendit():
         tasks.append(task)
     completed_tasks = await asyncio.gather(*tasks)
     return completed_tasks
-# results = run_event_loop(completed_tasks)
-# print(results)
-results = run_new_event_loop(sendit)
-combined = pd.concat(results)
-combined = combined.reset_index()
-print(combined)
-combined.to_json("./src/html_templates/new_events_email_template/new_events.json", orient='table', index=False)
-# aws_tools = AWS_tools()
 
-df = run_new_event_loop(EventParser('concertsforcarers').main)
-print(df)
-df.to_json("./src/html_templates/new_events_email_template/new_events.json", orient='table', index=False)
+results = run_new_event_loop(sendit)
+event_df = pd.concat(results)
+event_df = event_df.reset_index()
+
+
+obj_array = event_df.to_dict(orient='records')
+
+
+
+env = Environment(loader=FileSystemLoader(r'C:\Users\callu\OneDrive\Documents\coding\webscrape\ticket_checker_app\ticket_checker_app\src\app'))
+template = env.get_template(r'jinja_template.html')
+
+data = {
+     'events': obj_array,
+     'columns': ['event_name', 'location', 'date'],
+     'count': len(obj_array),
+}
+output = template.render(data)
+
+
+print(data['count'])
+with open(r"./email.html", 'w', encoding='utf-8') as f:
+     f.write(output)
