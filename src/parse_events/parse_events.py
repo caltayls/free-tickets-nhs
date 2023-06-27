@@ -154,7 +154,12 @@ class EventParser:
         return event_df
     
     @staticmethod
-    async def new_events():
+    def new_events():
+        loop = asyncio.get_event_loop()
+        return  loop.run_until_complete(EventParser._fetch_all())
+ 
+    @staticmethod
+    async def _fetch_all():
         parser1 = EventParser('bluelighttickets')
         parser2 = EventParser('ticketsforgood')
         parser3 = EventParser('concertsforcarers')
@@ -165,20 +170,21 @@ class EventParser:
         df_array = await asyncio.gather(*tasks)
         event_df = pd.concat(df_array)
         event_df = event_df.reset_index()
+        event_df['website_name'] = event_df.website.str.replace(r'https://(www\.)?(nhs.)?', '', regex=True)
+        event_df.website_name = event_df.website_name.str.replace(r"\.\w+(\.w+)?", '', regex=True)
         return event_df
 
 
 
+
 if __name__ == "__main__":
+    pass
     
     def run_event_loop(method): 
         loop = asyncio.get_event_loop()
         return loop.run_until_complete(method())
     
-    df = run_event_loop(EventParser.new_events)
+    # df = run_event_loop(EventParser._fetch_all)
+    df = EventParser.new_events()
     print(df)
   
-
-    df['website_name'] = df.website.str.replace(r'https://(www\.)?', '', regex=True)
-    df.website_name = df.website_name.str.replace(r"\.\w+(\.w+)?", '', regex=True)
-    df.website_name.unique()
