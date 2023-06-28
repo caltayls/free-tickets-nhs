@@ -2,16 +2,15 @@ import pandas as pd
 import boto3
 from io import BytesIO, StringIO
 import datetime
+import os
 
-with open(r"C:\Users\callu\OneDrive\Desktop\aws-key.txt", 'r') as f:
-    key = f.readline().strip('\n')
-    sec = f.readline().strip('\n')
+
 
 class AWS_tools:
 
     def __init__(self,):
-
-        with open(r"C:\Users\callu\OneDrive\Desktop\aws-key.txt", 'r') as f:
+        aws_txt_path = os.path.join(os.path.dirname(__file__), '../../info/aws-key.txt')
+        with open(aws_txt_path, 'r') as f:
             key = f.readline().strip('\n')
             sec = f.readline().strip('\n')
         
@@ -85,11 +84,10 @@ def update_event_history(new_events, aws_tools_instance):
         aws_tools_instance.df_to_bucket(new_events, 'event_history.csv', 'nhs-free-events')
 
 if __name__ == '__main__':
-    with open(r'C:\Users\callu\OneDrive\Documents\coding\webscrape\ticket_checker_app\ticket_checker_app\src\html_templates\new_events_email_template\new_events_email.html', 'r') as f:
-        html = f.read()
-
-
-    AWS_tools(key, sec).send_email(address_list=['callumtaylor955@gmail.com'], source_email_address='callumtaylor955@gmail.com', html=html)
+    pass
+    # with open(r'C:\Users\callu\OneDrive\Documents\coding\webscrape\ticket_checker_app\ticket_checker_app\src\html_templates\new_events_email_template\new_events_email.html', 'r') as f:
+    #     html = f.read()
+    # AWS_tools().send_email(address_list=['callumtaylor955@gmail.com'], source_email_address='callumtaylor955@gmail.com', html=html)
 
 
 

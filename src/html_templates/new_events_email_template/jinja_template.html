@@ -4,76 +4,63 @@
     <title>New Events Email</title>
     <style>
         * {
-    font-family: sans-serif;
-}
+            font-family: sans-serif;
+        }
 
-#header-container {
-    margin: 0 75px;
-    color: rgb(8, 116, 188)
-}
+        #header-container {
+            /* margin: 0 75px; */
+            color: rgb(1, 88, 145)
+        }
 
+        h1 {
+            text-align: left;
+        }
 
-#table-container {
-    margin: -20px 75px;    
-}
+        #table-container {
+            /* margin: -20px 75px;     */
+        }
 
+        table {
+            border-collapse: collapse;
+            /* margin: 25px 0; */
+            font-size: 0.9em;
+            font-family: sans-serif;
+            min-width: 400px; 
+        }
 
-table {
-    border-collapse: collapse;
-    margin: 25px 0;
-    font-size: 0.9em;
-    font-family: sans-serif;
-    min-width: 400px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.15); 
-    border-radius: 10px;
-    
-}
+        thead tr {
+            background-color: #169ccd;
+            color: #ffffff;
+            text-align: left;
+        }
 
- thead tr {
-    background-color: #169ccd;
-    color: #ffffff;
-    text-align: left;
-    border-radius: 10px 10px 0 0;
-}
+        td, th {
+            padding: 10px;
+        }
 
+        th {
+            letter-spacing: 1px;
+            text-align: left;
+        }
 
-td, th {
-    padding: 10px;
-}
+        tbody tr {
+            border-bottom: 1px solid #dddddd;
+        }
 
+        tbody tr:nth-of-type(odd):hover {
+            background-color: #d3d6d7ab;
+        }
 
-th {
-    letter-spacing: 1px;
-    text-align: left;
-    /* border-radius: 10px; */
-}
-th:first-child {
-    border-top-left-radius: 5px;
-}
-th:last-child {
-    border-top-right-radius: 5px;
-}
+        tr:nth-of-type(even) {
+            background-color: #ebf1f45e;
+        }
 
-tbody tr {
-    border-bottom: 1px solid #dddddd;
-}
-
-tbody tr:nth-of-type(odd):hover {
-    background-color: #d3d6d7ab;
-}
-
-tr:nth-of-type(even) {
-    background-color: #ebf1f45e;
-}
-
-tr:nth-of-type(even):hover {
-    background-color: #c8eefe98;
-}
-tbody tr:last-of-type {
-    border-bottom: 2px solid #169ccd;
-}
-
-
+        tr:nth-of-type(even):hover {
+            background-color: #c8eefe98;
+        }
+        tbody tr:last-of-type {
+            border-bottom: 2px solid #169ccd;
+        }
 
     </style>
   
@@ -81,7 +68,7 @@ tbody tr:last-of-type {
 <body>
 
     <div id="header-container">
-        <h1>{{ count }} New Events</h1>
+        <h1>{{ count }} New Event{% if count!=1 %}s{% endif %}</h1>
     </div>
     <div id="table-container">
         <table>
@@ -104,5 +91,6 @@ tbody tr:last-of-type {
             </tbody>
         </table>
     </div>
+    <p>tfg status: {% if tfg_status %}Logged in{% else %}Logged out{% endif %}</p>
 </body>
 </html>

@@ -4,37 +4,41 @@ from bs4 import BeautifulSoup
 import re
 import aiohttp
 import json
-import pickle
-
-
-with open(r"C:\Users\callu\OneDrive\Desktop\ticketsforgood.txt", 'r') as f:
+import os
+if __name__ != '__main__':
+    tfg_txt_path = os.path.join(os.path.dirname(__file__), '../../info/ticketsforgood.txt')
+else:
+    tfg_txt_path = "info/ticketsforgood.txt"
+with open(tfg_txt_path, 'r') as f:
     email = f.readline().strip('\n')
     pw = f.readline().strip('\n')
 
   
 class EventParser:
+    is_tfg_logged_in = None # Used to check if log in is successful
 
     def __init__(self, website):
         self.website = website
-
-        with open("./src/parse_events/site_info.json", "r") as file:
+        if __name__ != '__main__':
+            site_info_path = os.path.join(os.path.dirname(__file__), './site_info.json')
+        else:
+            site_info_path = "src/parse_events/site_info.json"
+        with open(site_info_path, "r") as file:
             info_all_sites = json.load(file)
         self.site_info = info_all_sites[self.website]
 
+
     async def fetch_html(self):
-        html_obj = {
-            'html': None,
-            'logged_in': None,
-        }
+        card_html = None
         async with aiohttp.ClientSession() as session: # create a session so login is cached and cookies are stored
-            await self.login(session)
+            if self.website == 'ticketsforgood':
+                await self.login(session)
             page_url =  self.site_info['URL_BASE'] + self.site_info['FIRST_PAGE_REL_PATH']
             async with session.get(page_url) as response:
                 content = await response.text()
                 soup = BeautifulSoup(content, 'html.parser')
             if self.website == 'ticketsforgood':
-                login_success = self.is_logged_in(soup)
-                html_obj.update({'logged_in': login_success})
+                EventParser.is_tfg_logged_in = self.is_logged_in(soup)
             
             # Find number of pages to search
             if not re.search('concertsforcarers', self.site_info['URL_BASE']):
@@ -46,7 +50,7 @@ class EventParser:
             tasks = []
             sem = asyncio.Semaphore(2) # Restricts concurrent tasks to 2. i.e. only allows two iterations of loop to happen simultaneously.
             # for i in range(last_page_num):
-            for i in range(1): ##############change
+            for i in range(2): ##############change
                 page_ext = self.site_info['PAGE_QUERY_REL_PATH']
                 if self.website != 'concertsforcarers':
                     page_ext += str(i+1)
@@ -55,8 +59,8 @@ class EventParser:
                 tasks.append(task)
             completed_tasks = await asyncio.gather(*tasks)
             card_html = [card for sublist in completed_tasks for card in sublist]
-            html_obj.update({'html': card_html})
-            return html_obj
+    
+            return card_html
 
         
         
@@ -145,16 +149,13 @@ class EventParser:
 
 
     async def main(self):
-        html_dict = await self.fetch_html()
-        cards_html = html_dict['html']
+        cards_html = await self.fetch_html()
         event_df = self.html_to_dataframe(cards_html)
-        if self.website == 'ticketsforgood':
-            is_logged_in = html_dict['logged_in']
-            print(f"Logged in? {is_logged_in}")
         return event_df
     
     @staticmethod
     def new_events():
+        print(os.getcwd())
         loop = asyncio.get_event_loop()
         return  loop.run_until_complete(EventParser._fetch_all())
  
@@ -172,13 +173,12 @@ class EventParser:
         event_df = event_df.reset_index()
         event_df['website_name'] = event_df.website.str.replace(r'https://(www\.)?(nhs.)?', '', regex=True)
         event_df.website_name = event_df.website_name.str.replace(r"\.\w+(\.w+)?", '', regex=True)
-        return event_df
-
+        return {'events': event_df, 'tfg_status': EventParser.is_tfg_logged_in}
 
 
 
 if __name__ == "__main__":
-    pass
+
     
     def run_event_loop(method): 
         loop = asyncio.get_event_loop()
@@ -187,4 +187,5 @@ if __name__ == "__main__":
     # df = run_event_loop(EventParser._fetch_all)
     df = EventParser.new_events()
     print(df)
+    print(EventParser.is_tfg_logged_in)
   
