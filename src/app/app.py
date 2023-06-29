@@ -15,12 +15,11 @@ def find_events():
 
     # concat columns to form link then render new events html
     new_events_df['url'] = new_events_df.website + new_events_df.url
-    print(new_events_df['url'])
     html = render_html(new_events_df, tfg_status, r"/src/html_templates/new_events_email_template/jinja_template.html")
 
     # Email new events 
     aws_tools_instance.send_email(
-        address_list=['callumtaylor955@gmail.com'], 
+        address_list=['callumtaylor955@gmail.com', 'tomebbatson@live.co.uk'], 
         source_email_address='callumtaylor955@gmail.com', 
         html=html
     )

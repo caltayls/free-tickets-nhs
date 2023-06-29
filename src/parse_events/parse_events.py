@@ -29,8 +29,8 @@ class EventParser:
 
 
     async def fetch_html(self):
-        card_html = None
-        async with aiohttp.ClientSession() as session: # create a session so login is cached and cookies are stored
+        card_html = None # Think there was a gotcha without... not sure but it stays
+        async with aiohttp.ClientSession() as session: 
             if self.website == 'ticketsforgood':
                 await self.login(session)
             page_url =  self.site_info['URL_BASE'] + self.site_info['FIRST_PAGE_REL_PATH']
@@ -41,7 +41,8 @@ class EventParser:
                 EventParser.is_tfg_logged_in = self.is_logged_in(soup)
             
             # Find number of pages to search
-            if not re.search('concertsforcarers', self.site_info['URL_BASE']):
+            if not re.search('concertsforcarers', self.site_info['URL_BASE']): # This can be made simpler now
+            # if self.website != 'concertsforcarers':
                 last_page_num_el = soup.select(self.site_info['LAST_PAGE_ELEMENT_SEL'])[-1]['href']
                 last_page_num = int(re.search(self.site_info['LAST_PAGE_TEXT_PAT'], last_page_num_el).group(1))
             else:
@@ -50,7 +51,7 @@ class EventParser:
             tasks = []
             sem = asyncio.Semaphore(2) # Restricts concurrent tasks to 2. i.e. only allows two iterations of loop to happen simultaneously.
             # for i in range(last_page_num):
-            for i in range(2): ##############change
+            for i in range(last_page_num): 
                 page_ext = self.site_info['PAGE_QUERY_REL_PATH']
                 if self.website != 'concertsforcarers':
                     page_ext += str(i+1)

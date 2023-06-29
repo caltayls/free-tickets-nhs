@@ -36,9 +36,12 @@ class AWS_tools:
         df = pd.read_csv(BytesIO(content))
         return df
     
-    def send_email(self, address_list, source_email_address, html):
+    def send_email(self, address_list, source_email_address, html, bcc=True):
         # html = events_df.to_html(index=False, )
-
+        if bcc:
+            send_type = 'BccAddresses'
+        else:
+            send_type = 'ToAddresses'
         CHARSET = "UTF-8"
         message = {
                 "Body": {"Html": {"Charset": CHARSET, "Data": html}},
@@ -46,7 +49,7 @@ class AWS_tools:
         }
 
         response = self.ses.send_email(
-            Destination={"ToAddresses": address_list},
+            Destination={send_type: address_list},
             Message=message,
             Source=source_email_address,
         )
