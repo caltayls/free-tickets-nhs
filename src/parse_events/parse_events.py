@@ -5,6 +5,7 @@ import re
 import aiohttp
 import json
 import os
+
 if __name__ != '__main__':
     tfg_txt_path = os.path.join(os.path.dirname(__file__), '../../info/ticketsforgood.txt')
 else:
@@ -156,7 +157,6 @@ class EventParser:
     
     @staticmethod
     def new_events():
-        print(os.getcwd())
         loop = asyncio.get_event_loop()
         return  loop.run_until_complete(EventParser._fetch_all())
  
