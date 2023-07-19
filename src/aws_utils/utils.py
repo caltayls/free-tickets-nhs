@@ -74,7 +74,7 @@ def get_active_events_dataset(aws_tools_instance):
     update_event_history(not_active, aws_tools_instance)
     return active
 
-def events_to_email(new_df, active_events, aws_tools_instance):
+def events_to_email(new_df, active_events):
     """Compares new search to active events dataset.
     returns new events and adds then to active events."""
 
@@ -84,6 +84,7 @@ def events_to_email(new_df, active_events, aws_tools_instance):
 
     diff_list = [*urls_new.difference(urls_active)]
     new_events_df = new_df.loc[new_df.url.isin(diff_list)]
+    today = datetime.datetime.now()
     new_events_df['time_added'] = today.strftime("%d/%m/%y-%H:%M")
 
     return new_events_df
