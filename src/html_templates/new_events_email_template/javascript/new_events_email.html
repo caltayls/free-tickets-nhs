@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>New Events Email</title>
+    <link href=".\css\new_events_email.css" rel="stylesheet"/>
+</head>
+<body>
+    <div id="js-html">
+        <div id="header-container"></div>
+        <div id="table-container"></div>
+    </div>
+
+
+<script id="populate-table">
+
+    const container = document.querySelector("#table-container");
+    const h1Container = document.querySelector("#header-container");
+    const eventTable = document.createElement('table');
+    const tableHead = document.createElement('thead');
+    const tableBody = document.createElement('tbody');
+    container.appendChild(eventTable);
+    eventTable.appendChild(tableHead);
+    eventTable.appendChild(tableBody);
+
+    fetch("new_events.json")
+        .then(response => response.json())
+        .then(json => json.data)
+        .then(dataArray => {
+            const h1 = document.createElement('h1');
+            h1.innerHTML = `${dataArray.length} New Events`;
+            h1Container.appendChild(h1);
+
+            // Create header row
+            const tableHeaderRow = document.createElement('tr');
+            tableHead.appendChild(tableHeaderRow);
+            const columnNames = Object.keys(dataArray[0]);
+            columnNames.forEach(name => {
+                if (name !== 'url' && name !== 'website'){
+                    const tableData = document.createElement('th');
+                    tableData.innerHTML = name;
+                    tableHeaderRow.appendChild(tableData);
+
+                }
+                
+                });
+           
+            const data = dataArray.map(event => {
+                const { url, website, ...rest } = event;
+                // return object containing full link and obj of info
+                return {
+                    event: rest,
+                    link: website + url,
+                }
+            });
+
+            data.forEach(obj => {
+                const { link, event } = obj;
+                const eventRow = document.createElement('tr');
+                const a = document.createElement('a');
+                a.href = link;
+                // Create and populate rows
+                Object.entries(event).forEach(([key, value]) => {
+                    const td = document.createElement('td');
+                    td.classList.add(key);
+                    
+                    key === 'event_name'
+                    ? (td.innerHTML = `<a href="${link}">${value}</a>`)
+                    : (td.innerHTML = value);
+                   
+                
+                    eventRow.appendChild(td);
+                    
+                })
+                tableBody.appendChild(eventRow);
+
+            
+        });
+
+    });
+
+
+
+  </script>
+
+  <script>
+    const staticHTML = document.documentElement.outerHTML;
+
+// Print the static HTML to the console
+    // copy(document.body.innerHTML);
+  </script>
+</body>
+
+</html>
