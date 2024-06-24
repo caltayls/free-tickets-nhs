@@ -1,44 +1,61 @@
 import pandas as pd
 import os
+import datetime
 from dotenv import load_dotenv
 from src.html_generator.html_generator import render_html
 from src.aws_utils.utils import AWS_tools
 
 load_dotenv()
-aws_bucket = os.getenv("AWS_BUCKET")
-active = AWS_tools().bucket_to_df("active_events.csv", aws_bucket)
-active.time_added.unique()
-
-active.time_added = pd.to_datetime(active.time_added, format='%d/%m/%y-%H:%M')
-active = active.dropna().sort_values("time_added")
-active
 
 
-
-users_df = pd.read_csv("users.csv")
-
-events = pd.read_csv("event_history.csv")
-events.sort_values("time_added", ascending=False)
-events[events.location.str.contains('Newcastle | Brighton | Salford')]
-
-
-for user in users_df.itertuples():
-  if user.frequency == "hourly":
-
-
-    
-
-
-
-  # send_emails(new_events):
-  #   iterate through user csv
-  #   check requested freq
-  #   check requested locations
 def send_emails(events, aws_instance, tfg_status):
+  aws_bucket = os.getenv("AWS_BUCKET")
+  source_email = os.getenv("SOURCE_EMAIL_ADDRESS")
+
+  active_events = AWS_tools().bucket_to_df("active_events.csv", aws_bucket)
+  active_events.time_added = pd.to_datetime(active_events.time_added, format='%d/%m/%y-%H:%M')
+  active_events = active_events.dropna().sort_values("time_added")
+
+  dt_now = datetime.datetime.now()
+  day_of_week_now = dt_now.strftime("%A")
+
   users_df = aws_instance.bucket_to_df("users.csv", aws_bucket)
+  users_df = pd.read_csv("users.csv")
+
+  # collective email to users subscribed to all times
+  users_all_times = users_df[(users_df.frequency == "hourly") & (users_df.locations == "All")]
+  html_hourly_all_locs = render_html(events, tfg_status)
+  aws_instance.send_email(
+      address_list=users_all_times.email.unique(),
+      source_email_address= source_email, 
+      html=html_hourly_all_locs
+  )
+
+  # send personalised emails to rest
+  users_remaining = users_df[(users_df.frequency != "hourly") & (users_df.locations != "All")]
+  for user in users_remaining.itertuples():
+    # hourly
+    events_refined = active_events[active_events.location.str.contains(user.locations)]
+    if user.frequency == "hourly":
+      if len(events_refined) == 0: continue
+      html = render_html(events_refined, tfg_status)
+      aws_instance.send_email(address_list= user.email,source_email_address= source_email, html=html)
+    # daily
+    elif user.frequency == "daily" & dt_now.hour == 17:
+      daily_events = events_refined[events_refined.time_added.dt.strftime("%d%m") == dt_now.strftime("%d%m")]
+      if len(daily_events) == 0: continue
+      html = render_html(daily_events, tfg_status)
+      aws_instance.send_email(address_list= user.email, source_email_address= source_email, html=html)
+    # weekly at 1700 on Fridays
+    elif user.frequency == "weekly" & dt_now.hour == 17 & day_of_week_now == "Friday":
+      weekly_events = events_refined[events_refined.time_added.dt.isocalendar().week == dt_now.isocalendar()[1]]
+      if len(weekly_events) == 0: continue
+      aws_instance.send_email(address_list= user.email, source_email_address= source_email, html=html)
+
+
+
     
-  template_path = r"/src/html_templates/new_events_email_template/jinja_template.html"
-  html = render_html(events, tfg_status, template_path)
+
 
   # Email new events 
   aws_instance.send_email(

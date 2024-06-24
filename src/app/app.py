@@ -17,6 +17,13 @@ def find_events():
     update_active_events(active_events_df, new_events_df, aws_tools_instance)
     # concat columns to form link then render new events html
     new_events_df['url'] = new_events_df.website + new_events_df.url
+
+
+    # send_emails(new_events):
+    #   iterate through user csv
+    #   check requested freq
+    #   check requested locations
+    
     template_path = r"/src/html_templates/new_events_email_template/jinja_template.html"
     html = render_html(new_events_df, tfg_status, template_path)
 
